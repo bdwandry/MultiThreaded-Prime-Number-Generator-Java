@@ -1,3 +1,7 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
 class MultithreadCalculate extends Thread {
     public void run() {
         try {
@@ -48,7 +52,9 @@ public class MultiThreadPrimeNumGen {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
+        File file = new File(System.getProperty("user.home") + "/Desktop" + "/PrimeNumber.txt");
+        PrintWriter out = new PrintWriter(file);
 
         //Gets number of CPU Cores
         cores = Runtime.getRuntime().availableProcessors();
@@ -77,8 +83,14 @@ public class MultiThreadPrimeNumGen {
                 break;
             }
         }
-
         printMatrix(primeArray);
+
+        for (int i = 0; i < cores; i++) {
+            if (primeArray[1][i] == 1) {
+                out.println("PrimeNum: " + primeArray[0][i]);
+                out.flush();
+            }
+        }
     }
 
     public static void printMatrix(int[][] arr) {
