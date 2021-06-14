@@ -27,7 +27,7 @@ class MultithreadCalculate extends Thread {
                 MultiThreadPrimeNumGen.primeArray[1][indexNum] = 1;
             }
 
-            System.out.println("Thread " + Thread.currentThread().getId() + "; Claimed Index: " + indexNum + "; Claimed Number: " + MultiThreadPrimeNumGen.primeArray[0][indexNum] + "; isPrime: " + isPrime);
+            System.out.println("Thread " + Thread.currentThread().getId() + "; Claimed Lock: " + indexNum + "; Claimed Number: " + MultiThreadPrimeNumGen.primeArray[0][indexNum] + "; isPrime: " + isPrime);
         }
         catch (Exception e) {
             System.out.println("Exception is caught");
@@ -60,35 +60,35 @@ public class MultiThreadPrimeNumGen {
         cores = Runtime.getRuntime().availableProcessors();
         System.out.println("Number of Cores: " + cores);
 
-        primeArray = new int[2][cores];
-        fillArray();
-        printMatrix(primeArray);
-        for (int i = 0; i < cores; i++) {
-            MultithreadCalculate multithreadCalculate = new MultithreadCalculate();
-            multithreadCalculate.start();
-        }
-
         while (true) {
-            boolean flag = false;
+            primeArray = new int[2][cores];
+            fillArray();
+            printMatrix(primeArray);
             for (int i = 0; i < cores; i++) {
-                if ((primeArray[1][i] == 0) || (primeArray[1][i] == 1)) {
-                    flag = true;
-                } else {
-                    flag = false;
+                MultithreadCalculate multithreadCalculate = new MultithreadCalculate();
+                multithreadCalculate.start();
+            }
+
+            while (true) {
+                boolean flag = false;
+                for (int i = 0; i < cores; i++) {
+                    if ((primeArray[1][i] == 0) || (primeArray[1][i] == 1)) {
+                        flag = true;
+                    } else {
+                        flag = false;
+                        break;
+                    }
+                }
+                if (flag) {
                     break;
                 }
             }
-
-            if (flag) {
-                break;
-            }
-        }
-        printMatrix(primeArray);
-
-        for (int i = 0; i < cores; i++) {
-            if (primeArray[1][i] == 1) {
-                out.println("PrimeNum: " + primeArray[0][i]);
-                out.flush();
+            printMatrix(primeArray);
+            for (int i = 0; i < cores; i++) {
+                if (primeArray[1][i] == 1) {
+                    out.println("PrimeNum: " + primeArray[0][i]);
+                    out.flush();
+                }
             }
         }
     }
