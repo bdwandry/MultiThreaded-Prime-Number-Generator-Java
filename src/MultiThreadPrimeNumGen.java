@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 class MultithreadCalculate extends Thread {
     int PrimeNumCalculate = -1;
@@ -47,11 +49,13 @@ class MultithreadCalculate extends Thread {
     }
 }
 
-
 public class MultiThreadPrimeNumGen {
     public static int [][] primeArray;
-    public static int primeBase = 1;
-    public static int cores;
+    private static int primeBase = 1;
+    private static int counterOfPrimes = 0;
+    private static int cores;
+    private static  File file;
+    private static PrintWriter out;
 
     private static void fillArray() {
         for (int i = 0; i < cores; i++) {
@@ -63,14 +67,7 @@ public class MultiThreadPrimeNumGen {
         }
     }
 
-    public static void main(String[] args) throws FileNotFoundException {
-        File file = new File(System.getProperty("user.home") + "/Desktop" + "/PrimeNumber.txt");
-        PrintWriter out = new PrintWriter(file);
-
-        cores = Runtime.getRuntime().availableProcessors();
-        System.out.println("Number of Cores: " + cores);
-        out.println(2);
-        out.flush();
+    private static void CalculatePrimeNumberInBatches() {
         while (true) {
             primeArray = new int[2][cores];
             fillArray();
@@ -80,7 +77,6 @@ public class MultiThreadPrimeNumGen {
                 multithreadCalculate.setIndexNum(i);
                 multithreadCalculate.start();
             }
-
             while (true) {
                 boolean flag = false;
                 for (int i = 0; i < cores; i++) {
@@ -95,16 +91,61 @@ public class MultiThreadPrimeNumGen {
                     break;
                 }
             }
-            printMatrix(primeArray);
-
-            for (int i = 0; i < cores; i++) {
-                if (primeArray[1][i] == 1) {
-                    out.println(primeArray[0][i]);
-                }
-            }
-
-            out.flush();
+            PrintPrimes();
         }
+    }
+
+    private static void PrintPrimes() {
+        //            printMatrix(primeArray);
+        for (int i = 0; i < cores; i++) {
+            if (primeArray[1][i] == 1) {
+                out.println(++counterOfPrimes + ". Prime Number: " + primeArray[0][i]);
+            }
+        }
+
+        out.flush();
+    }
+
+    public static void main(String[] args) throws FileNotFoundException {
+        file = new File(System.getProperty("user.home") + "/Desktop" + "/PrimeNumber.txt");
+        if (file.isFile()) {
+            if (file.length() != 0) {
+                System.out.print("File Already Exit. Would you like to continue? <Yes> or <No>: ");
+                Scanner in = new Scanner(System.in);
+                String flag = in.nextLine();
+
+                while (!(flag.equalsIgnoreCase("Yes") || flag.equalsIgnoreCase("No"))) {
+                    System.out.println("INVALID ANSWER. TYPE YES OR NO!");
+                    System.out.print("Enter 'Yes' or 'No': ");
+                    flag = in.nextLine();
+                }
+
+                if (flag.equalsIgnoreCase("Yes")) {
+                    ArrayList<String> tempReadArr = new ArrayList<>();
+                    Scanner readFile = new Scanner(file);
+                    while (readFile.hasNextLine()) {
+                        String specificLine = readFile.nextLine();
+                        tempReadArr.add(specificLine);
+                    }
+
+                    out = new PrintWriter(file);
+                    for (int i = 0; i < tempReadArr.size(); i++) {
+                        out.println(++counterOfPrimes + ". Prime Number: " + tempReadArr.get(i));
+                        out.flush();
+                    }
+                } else {
+                    out = new PrintWriter(file);
+                }
+            } else {
+                out = new PrintWriter(file);
+            }
+        } else {
+            out = new PrintWriter(file);
+        }
+
+        cores = Runtime.getRuntime().availableProcessors();
+        System.out.println("Number of Cores: " + cores);
+        CalculatePrimeNumberInBatches();
     }
 
     public static void printMatrix(int[][] arr) {
