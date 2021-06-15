@@ -27,6 +27,7 @@ class MultithreadCalculate extends Thread {
     public void run() {
         try {
             boolean isPrime = true;
+            long startTime = System.nanoTime();
             for (int i = 2; i < getPrimeNumCalculate(); i++) {
                 if (getPrimeNumCalculate() % i == 0) {
                     isPrime = false;
@@ -40,8 +41,10 @@ class MultithreadCalculate extends Thread {
                 MultiThreadPrimeNumGen.primeArray[0][getIndexNum()] = getPrimeNumCalculate();
                 MultiThreadPrimeNumGen.primeArray[1][getIndexNum()] = 1;
             }
-
-            System.out.println("Thread " + Thread.currentThread().getId() + "; Index: " + getIndexNum() + "; Number: " + getPrimeNumCalculate() + "; isPrime: " + isPrime);
+            long endTime = System.nanoTime();
+            long timeElapsed = endTime - startTime;
+            MultiThreadPrimeNumGen.timeArray[getIndexNum()] = (timeElapsed/1000000);
+            System.out.println("Thread " + Thread.currentThread().getId() + "; Index: " + getIndexNum() + "; Number: " + getPrimeNumCalculate() + "; isPrime: " + isPrime + "; Time To Calculate: " + (timeElapsed/1000000) + " ms");
         }
         catch (Exception e) {
             System.out.println("Exception is caught");
@@ -51,11 +54,12 @@ class MultithreadCalculate extends Thread {
 
 public class MultiThreadPrimeNumGen {
     public static int [][] primeArray;
+    public static long [] timeArray;
     private static int primeBase = 1;
     private static int counterOfPrimes = 0;
     private static int cores;
-    private static  File file;
-    private static PrintWriter out;
+    private static  File file = null;
+    private static PrintWriter out = null;
 
     private static void fillArray() {
         for (int i = 0; i < cores; i++) {
@@ -65,11 +69,16 @@ public class MultiThreadPrimeNumGen {
         for (int i = 0; i < cores; i++) {
             primeArray[1][i] = -1;
         }
+
+        for (int i = 0; i < cores; i++) {
+            timeArray[i] = -1;
+        }
     }
 
     private static void CalculatePrimeNumberInBatches() {
         while (true) {
             primeArray = new int[2][cores];
+            timeArray = new long[cores];
             fillArray();
             for (int i = 0; i < cores; i++) {
                 MultithreadCalculate multithreadCalculate = new MultithreadCalculate();
@@ -99,7 +108,7 @@ public class MultiThreadPrimeNumGen {
         //            printMatrix(primeArray);
         for (int i = 0; i < cores; i++) {
             if (primeArray[1][i] == 1) {
-                out.println(++counterOfPrimes + ". Prime Number: " + primeArray[0][i]);
+                out.println(++counterOfPrimes + ". Time to calculate: " + timeArray[i] + "; Prime Number: " + primeArray[0][i]);
             }
         }
 
@@ -130,17 +139,40 @@ public class MultiThreadPrimeNumGen {
 
                     out = new PrintWriter(file);
                     for (int i = 0; i < tempReadArr.size(); i++) {
-                        out.println(++counterOfPrimes + ". Prime Number: " + tempReadArr.get(i));
+                        out.println(tempReadArr.get(i));
                         out.flush();
+                    }
+
+                    String[] splitString = tempReadArr.get(tempReadArr.size() - 1).split(" ");
+                    counterOfPrimes = Integer.parseInt(splitString[0].substring(0, splitString[0].length() - 1));
+                    primeBase = Integer.parseInt(splitString[7]);
+
+                    for (int i = 0; i < splitString.length; i++) {
+                        System.out.println(i + ". " + splitString[i]);
                     }
                 } else {
                     out = new PrintWriter(file);
+                    long startTime = System.nanoTime();
+                    long endTime = System.nanoTime();
+                    long timeElapsed = endTime - startTime;
+                    out.println(++counterOfPrimes + ". Time to calculate: " + (timeElapsed/1000000) + "; Prime Number: " + 2);
+                    out.flush();
                 }
             } else {
                 out = new PrintWriter(file);
+                long startTime = System.nanoTime();
+                long endTime = System.nanoTime();
+                long timeElapsed = endTime - startTime;
+                out.println(++counterOfPrimes + ". Time to calculate: " + (timeElapsed/1000000) + "; Prime Number: " + 2);
+                out.flush();
             }
         } else {
             out = new PrintWriter(file);
+            long startTime = System.nanoTime();
+            long endTime = System.nanoTime();
+            long timeElapsed = endTime - startTime;
+            out.println(++counterOfPrimes + ". Time to calculate: " + (timeElapsed/1000000) + "; Prime Number: " + 2);
+            out.flush();
         }
 
         cores = Runtime.getRuntime().availableProcessors();
